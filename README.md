@@ -70,6 +70,9 @@ progress. No framework, no build step.
     <td align="center"><img src="docs/images/ui-history.png" width="270" alt="History"><br><sub><b>History</b><br>sensor readings over time</sub></td>
     <td align="center"><img src="docs/images/ui-log.png" width="270" alt="Event log"><br><sub><b>Event log</b><br>what the system did and when</sub></td>
   </tr>
+  <tr>
+    <td align="center" colspan="3"><img src="docs/images/ui-settings.png" width="270" alt="Settings"><br><sub><b>Settings</b><br>box target, theme, sound</sub></td>
+  </tr>
 </table>
 
 ## Modes
@@ -94,7 +97,7 @@ Ships with **Focus**, **Break** and idle. New ones are made in the dashboard, no
 | 5V fan + 2N2222 | Air, switched by the microcontroller |
 | KY-012 buzzer | Check-in prompts and block boundaries |
 
-<p align="center"><img src="docs/images/wiring.png" width="620" alt="Wiring diagram"></p>
+<p align="center"><img src="docs/images/schematic.png" width="600" alt="Circuit schematic"></p>
 
 ## Quick start
 
