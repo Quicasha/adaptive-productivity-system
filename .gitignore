@@ -1,0 +1,15 @@
+node_modules/
+
+# Prisijungimo duomenys - niekada i git
+firmware/secrets.h
+
+# Duomenu baze sukuriama automatiskai pirmo paleidimo metu
+*.db
+*.db-journal
+
+# OS ir redaktoriu failai
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

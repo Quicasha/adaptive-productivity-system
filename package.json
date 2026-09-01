@@ -1,0 +1,33 @@
+{
+  "name": "adaptive-productivity-system",
+  "version": "1.0.0",
+  "description": "IoT productivity system - ESP32 sensors and actuators, MQTT, Node server and a real-time web dashboard. Bachelor thesis project, KTU 2026.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "iot",
+    "esp32",
+    "mqtt",
+    "websocket",
+    "sqlite",
+    "express",
+    "productivity"
+  ],
+  "author": "Dovydas Jonikas",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^12.9.0",
+    "express": "^5.2.1",
+    "mqtt": "^5.15.1",
+    "ws": "^8.20.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Quicasha/adaptive-productivity-system.git"
+  }
+}
