@@ -162,8 +162,4 @@ route both through one module instead of spreading it across `app.js`.
 Code comments are in Lithuanian, matching the thesis they were written for. Deliberate - this is the
 project as submitted, not a rewrite.
 
-Full thesis and defence presentation: [KTU eLABa](https://www.elaba.lt/), under *Adaptyvi
-produktyvumo palaikymo sistema*. Supervisor prof. dr. Egidijus Kazanavičius, reviewer asist. dr.
-Rolandas Girčys.
-
 Released under the [MIT License](LICENSE).
