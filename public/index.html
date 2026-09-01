@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="lt" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adaptyvi produktyvumo sistema</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Toast pranešimų konteineris -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Viršutinė juosta -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">ADAPTYVI PRODUKTYVUMO SISTEMA</span>
+      </div>
+    </div>
+    <div class="topbar-center">
+      <nav class="tabs">
+        <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">Pagrindinis</button>
+        <button class="tab" data-tab="history" onclick="switchTab('history')">Istorija</button>
+        <button class="tab" data-tab="log" onclick="switchTab('log')">Žurnalas</button>
+        <button class="tab" data-tab="settings" onclick="switchTab('settings')">Nustatymai</button>
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <button class="notes-toggle-btn" onclick="toggleNotesPanel()" title="Užrašai">📝</button>
+      <div class="connection-indicator" id="conn-indicator">
+        <span class="conn-dot"></span>
+        <span class="conn-text" id="conn-text">Jungiamasi</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================ -->
+  <!-- PAGRINDINIS (Dashboard) -->
+  <!-- ============================================ -->
+  <main class="content" id="tab-dashboard">
+
+    <!-- Sesijos juosta su Pomodoro laikmačiu -->
+    <div class="session-bar" id="session-bar">
+      <div class="session-progress-fill" id="session-progress-fill"></div>
+      <div class="session-info">
+        <div class="session-mode">
+          <span class="session-label">Aktyvus režimas</span>
+          <span class="session-mode-name" id="session-mode-name">Neaktyvus</span>
+        </div>
+        <div class="session-timer">
+          <span class="session-label">Sesijos laikas</span>
+          <span class="session-time" id="session-time">00:00:00</span>
+        </div>
+      </div>
+      <div class="pomodoro-section" id="pomodoro-section" style="display:none">
+        <div class="pomodoro-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="pomodoro-bg" cx="50" cy="50" r="44"/>
+            <circle class="pomodoro-progress" id="pomodoro-ring" cx="50" cy="50" r="44"
+              stroke-dasharray="276.46" stroke-dashoffset="0"/>
+          </svg>
+          <div class="pomodoro-time" id="pomodoro-time">25:00</div>
+        </div>
+        <button class="ctrl-btn session-end-btn" onclick="endSessionSafe()">Baigti sesiją</button>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+      <!-- Sesijos statistika -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-value" id="stat-blocks">0</span>
+          <span class="stat-label">Šiandienos blokai</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-time">0 min</span>
+          <span class="stat-label">Darbo laikas</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="stat-streak">0</span>
+          <span class="stat-label">Dienų serija</span>
+        </div>
+      </div>
+
+      <!-- Jutiklių kortelės -->
+      <div class="sensor-card" id="temp-card">
+        <div class="sensor-header">
+          <span class="sensor-icon">🌡</span>
+          <span class="sensor-title">Temperatūra</span>
+        </div>
+        <div class="sensor-body">
+          <span class="sensor-value" id="temp">--</span>
+          <span class="sensor-unit">°C</span>
+        </div>
+        <div class="sensor-bar">
+          <div class="sensor-bar-fill" id="temp-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="sensor-card" id="hum-card">
+        <div class="sensor-header">
+          <span class="sensor-icon">💧</span>
+          <span class="sensor-title">Drėgmė</span>
+        </div>
+        <div class="sensor-body">
+          <span class="sensor-value" id="hum">--</span>
+          <span class="sensor-unit">%</span>
+        </div>
+        <div class="sensor-bar">
+          <div class="sensor-bar-fill" id="hum-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div class="sensor-card" id="lux-card">
+        <div class="sensor-header">
+          <span class="sensor-icon">☀</span>
+          <span class="sensor-title">Apšvietimas</span>
+        </div>
+        <div class="sensor-body">
+          <span class="sensor-value" id="lux">--</span>
+          <span class="sensor-unit">lx</span>
+        </div>
+        <div class="sensor-bar">
+          <div class="sensor-bar-fill" id="lux-bar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Režimų pasirinkimas -->
+      <div class="panel mode-panel">
+        <div class="panel-header">
+          <h3 class="panel-title">Darbo režimai</h3>
+          <button class="ctrl-btn add-mode-btn" onclick="openModeEditor()">+ Naujas režimas</button>
+        </div>
+        <div class="mode-buttons" id="mode-buttons">
+          <!-- Užpildoma dinamiškai -->
+        </div>
+      </div>
+
+      <!-- Sistemos būsena -->
+      <div class="panel status-panel">
+        <h3 class="panel-title">Sistemos būsena</h3>
+        <div class="status-grid">
+          <div class="status-item">
+            <span class="status-label">ESP32</span>
+            <div class="status-value-row">
+              <span class="status-dot" id="esp-dot"></span>
+              <span id="esp-text">Tikrinama...</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Ventiliatorius</span>
+            <div class="status-value-row">
+              <span class="status-dot" id="fan-dot"></span>
+              <span id="fan-text">Išjungtas</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Apšvietimo juosta</span>
+            <div class="status-value-row">
+              <span class="status-color-preview" id="led-preview"></span>
+              <span id="led-info">– / –</span>
+            </div>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Dėžutė</span>
+            <div class="status-value-row">
+              <span class="status-lock" id="servo-icon">🔒</span>
+              <span id="servo-info">Užrakinta</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dėžutės progresas -->
+        <div class="box-progress" id="box-progress">
+          <div class="box-progress-header">
+            <span class="status-label">Dėžutės progresas</span>
+            <span class="box-progress-count" id="box-count">0 / 3</span>
+          </div>
+          <div class="box-progress-bar">
+            <div class="box-progress-fill" id="box-fill" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rankinis valdymas -->
+      <div class="panel controls-panel">
+        <h3 class="panel-title">Rankinis valdymas</h3>
+        <div class="control-group">
+          <span class="control-label">Ventiliatorius</span>
+          <div class="control-actions">
+            <button class="ctrl-btn" onclick="toggleFan(true)">Įjungti</button>
+            <button class="ctrl-btn" onclick="toggleFan(false)">Išjungti</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Dėžutė</span>
+          <div class="control-actions">
+            <button class="ctrl-btn" onclick="setServo(true)">Užrakinti</button>
+            <button class="ctrl-btn" id="unlock-btn" onclick="handleUnlockClick()">Atrakinti</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Garso signalas</span>
+          <div class="control-actions">
+            <button class="ctrl-btn" onclick="buzzer()">Pyptelėti</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Apšvietimas</span>
+          <div class="control-actions">
+            <button class="ctrl-btn on" id="led-on-btn" onclick="toggleLed(true)">Įjungti</button>
+            <button class="ctrl-btn off" id="led-off-btn" onclick="toggleLed(false)">Išjungti</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Apšvietimo spalva</span>
+          <div class="control-actions">
+            <select id="led-color" onchange="onLedColorChange()">
+              <option value="blue">Mėlyna</option>
+              <option value="red">Raudona</option>
+              <option value="green">Žalia</option>
+              <option value="white">Balta</option>
+              <option value="yellow">Geltona</option>
+              <option value="custom">Pasirinktinė...</option>
+            </select>
+            <input type="color" id="led-custom-color" class="color-picker hidden" value="#6c7aff" onchange="updateLedCustom()">
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Apšvietimo ryškumas</span>
+          <div class="control-slider">
+            <input type="range" id="led-brightness" min="5" max="100" value="30" oninput="updateLedLabel()" onchange="updateLed()">
+            <span class="slider-val" id="led-bright-val">30</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================ -->
+  <!-- ISTORIJA -->
+  <!-- ============================================ -->
+  <main class="content hidden" id="tab-history">
+    <div class="panel full-panel">
+      <div class="history-header">
+        <h3 class="panel-title">Istoriniai jutiklių duomenys</h3>
+        <div class="period-btns">
+          <button class="period-btn active" onclick="loadHistory('1h', this)">1 val</button>
+          <button class="period-btn" onclick="loadHistory('6h', this)">6 val</button>
+          <button class="period-btn" onclick="loadHistory('24h', this)">24 val</button>
+          <button class="period-btn" onclick="loadHistory('7d', this)">7 d.</button>
+        </div>
+      </div>
+      <div class="chart-wrapper">
+        <div class="chart-box">
+          <div class="chart-label">Temperatūra (°C)</div>
+          <canvas id="tempChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-label">Drėgmė (%)</div>
+          <canvas id="humChart"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-label">Apšvietimas (lx)</div>
+          <canvas id="luxChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================ -->
+  <!-- ŽURNALAS -->
+  <!-- ============================================ -->
+  <main class="content hidden" id="tab-log">
+    <div class="panel full-panel">
+      <div class="log-header-row">
+        <h3 class="panel-title" style="margin-bottom:0">Veiklos žurnalas</h3>
+        <div class="log-filters">
+          <label class="log-filter-label">Tipas:</label>
+          <select id="log-type-filter" class="log-filter-select" onchange="renderLog()">
+            <option value="all">Visi</option>
+            <option value="rezimas">Režimai</option>
+            <option value="blokas">Blokai</option>
+            <option value="patikrinimas">Patikrinimai</option>
+            <option value="praleista">Praleista</option>
+            <option value="dezute">Dėžutė</option>
+          </select>
+        </div>
+      </div>
+      <div class="log-table-header">
+        <span class="log-col-time log-col-sortable" onclick="toggleLogSort()" title="Spustelėkite, kad pakeistumėte rūšiavimą">
+          Laikas <span id="log-sort-arrow">▼</span>
+        </span>
+        <span class="log-col-type">Tipas</span>
+        <span class="log-col-desc">Aprašymas</span>
+      </div>
+      <div class="log-container" id="log-container"></div>
+      <div class="log-empty hidden" id="log-empty">Nėra įrašų atitinkančių filtrą</div>
+    </div>
+  </main>
+
+  <!-- ============================================ -->
+  <!-- NUSTATYMAI -->
+  <!-- ============================================ -->
+  <main class="content hidden" id="tab-settings">
+    <div class="settings-grid">
+      <div class="panel">
+        <h3 class="panel-title">Išvaizda</h3>
+        <div class="setting-row">
+          <span class="setting-label">Tema</span>
+          <div class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-option" data-theme="dark">🌙 Tamsi</span>
+            <span class="theme-option" data-theme="light">☀ Šviesi</span>
+            <div class="theme-slider"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">Garsas</h3>
+        <div class="setting-row">
+          <span class="setting-label">Garso signalai</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="sound-enabled" checked onchange="toggleSound()">
+            <span class="toggle-track">
+              <span class="toggle-thumb"></span>
+            </span>
+          </label>
+        </div>
+        <p class="setting-hint">Išjungus garso signalus, garso signalas nebus aktyvuojamas patikrinimų ir režimo keitimų metu.</p>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">Dėžutės užraktas</h3>
+        <div class="setting-row">
+          <span class="setting-label">Blokų skaičius atrakinimui</span>
+          <div class="control-actions">
+            <input type="number" id="box-target" min="1" max="20" value="3" class="number-input">
+            <button class="ctrl-btn" onclick="updateBoxTarget()">Išsaugoti</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Reikalauti PIN kodo</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="pin-enabled" onchange="togglePinEnabled()">
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="setting-row" id="pin-input-row">
+          <span class="setting-label">Atrakinimo PIN kodas</span>
+          <div class="control-actions">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="box-pin" maxlength="4" value="" placeholder="0000" class="number-input pin-input">
+            <button class="ctrl-btn" id="pin-save-btn" onclick="updateBoxPin()">Išsaugoti</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Atstatyti progresą</span>
+          <button class="ctrl-btn danger-btn" onclick="resetBox()">Atstatyti</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title">Sistemos informacija</h3>
+        <div class="setting-row">
+          <span class="setting-label">ESP32 būsena</span>
+          <span class="setting-value" id="esp-setting-status">Tikrinama...</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">MQTT brokeris</span>
+          <span class="setting-value">localhost:1883</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">Serveris</span>
+          <span class="setting-value">localhost:3000</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================ -->
+  <!-- AKTYVUMO PATIKRINIMO MODALAS -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="checkin-modal">
+    <div class="modal">
+      <div class="modal-icon">⏰</div>
+      <h2 class="modal-title">Ar vis dar dirbate?</h2>
+      <p class="modal-desc">Patvirtinkite buvimą darbo vietoje</p>
+      <div class="modal-timer">
+        <div class="modal-timer-bar">
+          <div class="modal-timer-fill" id="checkin-bar"></div>
+        </div>
+        <span class="modal-time" id="checkin-time">00:30</span>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="endSession()">Baigti sesiją <kbd>Esc</kbd></button>
+        <button class="modal-btn primary" onclick="confirmCheckIn()">Esu čia <kbd>Space</kbd></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- REŽIMO REDAKTORIAUS MODALAS -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="mode-editor-modal">
+    <div class="modal modal-wide">
+      <h2 class="modal-title" id="mode-editor-title">Naujas režimas</h2>
+
+      <div class="editor-grid">
+        <!-- Bendra informacija (per visą plotį) -->
+        <div class="editor-section editor-section-full">
+          <h4 class="editor-section-title">Bendra informacija</h4>
+          <div class="editor-field">
+            <label>Pavadinimas</label>
+            <input type="text" id="editor-name" placeholder="Pvz. Gilus darbas" class="text-input">
+          </div>
+          <div class="editor-field">
+            <label>Ikona</label>
+            <div class="icon-picker" id="icon-picker">
+              <button class="icon-btn active" data-icon="◉" onclick="selectIcon(this)">◉</button>
+              <button class="icon-btn" data-icon="◎" onclick="selectIcon(this)">◎</button>
+              <button class="icon-btn" data-icon="○" onclick="selectIcon(this)">○</button>
+              <button class="icon-btn" data-icon="◐" onclick="selectIcon(this)">◐</button>
+              <button class="icon-btn" data-icon="★" onclick="selectIcon(this)">★</button>
+              <button class="icon-btn" data-icon="✦" onclick="selectIcon(this)">✦</button>
+              <button class="icon-btn" data-icon="◆" onclick="selectIcon(this)">◆</button>
+              <button class="icon-btn" data-icon="◇" onclick="selectIcon(this)">◇</button>
+              <button class="icon-btn" data-icon="◈" onclick="selectIcon(this)">◈</button>
+              <button class="icon-btn" data-icon="♦" onclick="selectIcon(this)">♦</button>
+              <button class="icon-btn" data-icon="▲" onclick="selectIcon(this)">▲</button>
+              <button class="icon-btn" data-icon="▼" onclick="selectIcon(this)">▼</button>
+              <button class="icon-btn" data-icon="■" onclick="selectIcon(this)">■</button>
+              <button class="icon-btn" data-icon="▣" onclick="selectIcon(this)">▣</button>
+              <button class="icon-btn" data-icon="▦" onclick="selectIcon(this)">▦</button>
+              <button class="icon-btn" data-icon="▩" onclick="selectIcon(this)">▩</button>
+              <button class="icon-btn" data-icon="⬟" onclick="selectIcon(this)">⬟</button>
+              <button class="icon-btn" data-icon="⬢" onclick="selectIcon(this)">⬢</button>
+              <button class="icon-btn" data-icon="⬡" onclick="selectIcon(this)">⬡</button>
+              <button class="icon-btn" data-icon="⬣" onclick="selectIcon(this)">⬣</button>
+              <button class="icon-btn" data-icon="⏱" onclick="selectIcon(this)">⏱</button>
+              <button class="icon-btn" data-icon="⏳" onclick="selectIcon(this)">⏳</button>
+              <button class="icon-btn" data-icon="⚡" onclick="selectIcon(this)">⚡</button>
+              <button class="icon-btn" data-icon="🔥" onclick="selectIcon(this)">🔥</button>
+              <button class="icon-btn" data-icon="💡" onclick="selectIcon(this)">💡</button>
+              <button class="icon-btn" data-icon="🧠" onclick="selectIcon(this)">🧠</button>
+              <button class="icon-btn" data-icon="📖" onclick="selectIcon(this)">📖</button>
+              <button class="icon-btn" data-icon="📝" onclick="selectIcon(this)">📝</button>
+              <button class="icon-btn" data-icon="📊" onclick="selectIcon(this)">📊</button>
+              <button class="icon-btn" data-icon="🎯" onclick="selectIcon(this)">🎯</button>
+              <button class="icon-btn" data-icon="🚀" onclick="selectIcon(this)">🚀</button>
+              <button class="icon-btn" data-icon="☕" onclick="selectIcon(this)">☕</button>
+              <button class="icon-btn" data-icon="🌙" onclick="selectIcon(this)">🌙</button>
+              <button class="icon-btn" data-icon="🌿" onclick="selectIcon(this)">🌿</button>
+              <button class="icon-btn" data-icon="🎨" onclick="selectIcon(this)">🎨</button>
+              <button class="icon-btn" data-icon="📚" onclick="selectIcon(this)">📚</button>
+            </div>
+          </div>
+          <div class="editor-field">
+            <label>Aprašymas</label>
+            <input type="text" id="editor-desc" placeholder="Trumpas aprašymas" class="text-input">
+          </div>
+        </div>
+
+        <!-- Laikmatis -->
+        <div class="editor-section">
+          <h4 class="editor-section-title">Darbo blokas</h4>
+          <div class="editor-field">
+            <label>Įjungti laikmatį</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="editor-timer-enabled" checked onchange="toggleTimerFields()">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <div class="collapsible" id="timer-fields">
+            <div class="collapsible-inner">
+              <div class="editor-field">
+                <label>Bloko trukmė (minutės)</label>
+                <input type="number" id="editor-timer" min="0.25" max="120" value="25" step="1" class="number-input"
+                  onchange="if(this.value<1){this.step=0.25}else{this.step=1}">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apšvietimas -->
+        <div class="editor-section">
+          <h4 class="editor-section-title">Apšvietimas</h4>
+          <div class="editor-field">
+            <label>Spalva</label>
+            <div class="color-select-group">
+              <select id="editor-led-color" class="select-input" onchange="onEditorColorChange()">
+                <option value="blue">Mėlyna</option>
+                <option value="red">Raudona</option>
+                <option value="green">Žalia</option>
+                <option value="white">Balta</option>
+                <option value="yellow">Geltona</option>
+                <option value="custom">Pasirinktinė...</option>
+              </select>
+              <input type="color" id="editor-custom-color" class="color-picker hidden" value="#6c7aff">
+            </div>
+          </div>
+          <div class="editor-field">
+            <label>Ryškumas</label>
+            <div class="control-slider">
+              <input type="range" id="editor-led-bright" min="5" max="100" value="30" oninput="this.nextElementSibling.textContent=this.value">
+              <span class="slider-val">30</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ventiliatorius -->
+        <div class="editor-section">
+          <h4 class="editor-section-title">Ventiliatorius</h4>
+          <div class="editor-field">
+            <label>Valdymo tipas</label>
+            <select id="editor-fan-control" class="select-input" onchange="toggleFanThreshold()">
+              <option value="auto">Automatinis</option>
+              <option value="manual">Rankinis</option>
+            </select>
+          </div>
+          <div class="editor-field" id="fan-threshold-field">
+            <label>Temperatūros slenkstis (°C)</label>
+            <input type="number" id="editor-fan-threshold" min="18" max="35" value="26" step="0.5" class="number-input">
+          </div>
+        </div>
+
+        <!-- Aktyvumo patikrinimas -->
+        <div class="editor-section">
+          <h4 class="editor-section-title">Aktyvumo patikrinimas</h4>
+          <div class="editor-field">
+            <label>Įjungti patikrinimą</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="editor-checkin-enabled" onchange="toggleCheckInFields()">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <div class="collapsible" id="checkin-fields">
+            <div class="collapsible-inner">
+              <div class="editor-field">
+                <label>Intervalas (minutės)</label>
+                <input type="number" id="editor-checkin-interval" min="0.25" max="120" value="25" step="1" class="number-input"
+                  onchange="if(this.value<1){this.step=0.25}else{this.step=1}">
+              </div>
+              <div class="editor-field">
+                <label>Laukimo laikas (sekundės)</label>
+                <input type="number" id="editor-checkin-timeout" min="10" max="120" value="30" class="number-input">
+              </div>
+              <div class="editor-field">
+                <label>Praleisto patikrinimo veiksmas</label>
+                <select id="editor-missed-action" class="select-input">
+                  <option value="stop">Sustabdyti sesiją</option>
+                  <option value="break">Perjungti į pertrauką</option>
+                  <option value="none">Nieko nedaryti</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Garso signalai -->
+        <div class="editor-section">
+          <h4 class="editor-section-title">Garso signalai</h4>
+          <div class="editor-field">
+            <label>Garsas pradžioje</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="editor-sound-start">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <div class="editor-field">
+            <label>Garsas pabaigoje</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="editor-sound-end" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+          <div class="editor-field">
+            <label>Garsas patikrinimo metu</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="editor-sound-checkin" checked>
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Dėžutė -->
+        <div class="editor-section">
+          <h4 class="editor-section-title">Dėžutės užraktas</h4>
+          <div class="editor-field">
+            <label>Užrakinti pradėjus sesiją</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="editor-servo-lock">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="closeModeEditor()">Atšaukti <kbd>Esc</kbd></button>
+        <button class="modal-btn danger" id="editor-delete-btn" onclick="deleteMode()" style="display:none">Ištrinti</button>
+        <button class="modal-btn primary" onclick="saveModeEditor()">Išsaugoti</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- BLOKO PABAIGOS MODALAS -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="block-complete-modal">
+    <div class="modal">
+      <div class="modal-icon">🎉</div>
+      <h2 class="modal-title">Blokas užbaigtas!</h2>
+      <p class="modal-desc" id="block-complete-desc">Sėkmingai užbaigėte bloką</p>
+      <div class="block-complete-info" id="block-complete-info"></div>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="closeBlockModal()">Uždaryti <kbd>Esc</kbd></button>
+        <button class="modal-btn secondary" id="block-repeat-btn" style="display:none">Pakartoti</button>
+        <button class="modal-btn primary" id="block-next-btn" onclick="closeBlockModal()">Kitas blokas <kbd>Enter</kbd></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- UŽRAŠŲ SKYDELIS (šoninis) -->
+  <!-- ============================================ -->
+  <div class="notes-panel hidden" id="notes-panel">
+    <div class="notes-header">
+      <h3 class="notes-title">📝 Užrašai</h3>
+      <div class="notes-header-actions">
+        <button class="notes-add-btn" onclick="addNote()">+ Naujas</button>
+        <button class="notes-close-btn" onclick="toggleNotesPanel()">✕</button>
+      </div>
+    </div>
+    <div class="notes-container" id="notes-container">
+      <!-- Užrašai generuojami dinamiškai -->
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PIN KODO MODALAS -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="pin-modal">
+    <div class="modal">
+      <div class="modal-icon">🔐</div>
+      <h2 class="modal-title">Dėžutės atrakinimas</h2>
+      <p class="modal-desc">Įveskite PIN kodą, kad atrakintumėte dėžutę</p>
+      <div class="pin-input-group">
+        <input type="password" id="pin-input-1" class="pin-digit" maxlength="1" oninput="pinNext(1)" onkeydown="pinBack(event, 1)">
+        <input type="password" id="pin-input-2" class="pin-digit" maxlength="1" oninput="pinNext(2)" onkeydown="pinBack(event, 2)">
+        <input type="password" id="pin-input-3" class="pin-digit" maxlength="1" oninput="pinNext(3)" onkeydown="pinBack(event, 3)">
+        <input type="password" id="pin-input-4" class="pin-digit" maxlength="1" oninput="pinNext(4)" onkeydown="pinBack(event, 4)">
+      </div>
+      <p class="pin-error hidden" id="pin-error">Neteisingas PIN kodas</p>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="hidePinModal()">Atšaukti <kbd>Esc</kbd></button>
+        <button class="modal-btn primary" onclick="verifyPin()">Atrakinti <kbd>Enter</kbd></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PATVIRTINIMO MODALAS -->
+  <!-- ============================================ -->
+  <div class="modal-overlay hidden" id="confirm-modal">
+    <div class="modal">
+      <div class="modal-icon">⚠</div>
+      <h2 class="modal-title" id="confirm-title">Patvirtinkite</h2>
+      <p class="modal-desc" id="confirm-desc">Ar tikrai norite tęsti?</p>
+      <div class="modal-actions">
+        <button class="modal-btn secondary" onclick="hideConfirmModal()">Atšaukti <kbd>Esc</kbd></button>
+        <button class="modal-btn primary" onclick="doConfirm()">Patvirtinti <kbd>Enter</kbd></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
