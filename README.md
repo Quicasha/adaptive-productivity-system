@@ -12,6 +12,12 @@
 
 <p align="center"><sub>Bachelor's thesis - Kaunas University of Technology, Faculty of Informatics, 2026</sub></p>
 
+<p align="center">
+  <img src="docs/images/prototype.png" width="360" alt="The assembled prototype">
+  &nbsp;&nbsp;
+  <img src="docs/images/ui-session.png" width="460" alt="The dashboard during a work session">
+</p>
+
 ## The idea
 
 Most productivity tools are a screen telling you what you should be doing. This one is a room that
@@ -51,6 +57,21 @@ progress. No framework, no build step.
   </tr>
 </table>
 
+## The dashboard
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/images/ui-dashboard.png" width="270" alt="Main view"><br><sub><b>Main view</b><br>live sensors, modes, manual control</sub></td>
+    <td align="center"><img src="docs/images/ui-checkin.png" width="270" alt="Check-in"><br><sub><b>Check-in</b><br>confirm you are still here, or the block breaks</sub></td>
+    <td align="center"><img src="docs/images/ui-block-complete.png" width="270" alt="Block complete"><br><sub><b>Block complete</b><br>the box moves one step closer to open</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/images/ui-mode-editor.png" width="270" alt="Mode editor"><br><sub><b>Mode editor</b><br>every decision a block needs, saved once</sub></td>
+    <td align="center"><img src="docs/images/ui-history.png" width="270" alt="History"><br><sub><b>History</b><br>sensor readings over time</sub></td>
+    <td align="center"><img src="docs/images/ui-log.png" width="270" alt="Event log"><br><sub><b>Event log</b><br>what the system did and when</sub></td>
+  </tr>
+</table>
+
 ## Modes
 
 A mode is a saved set of decisions, so a work block starts without any.
@@ -72,6 +93,8 @@ Ships with **Focus**, **Break** and idle. New ones are made in the dashboard, no
 | MG90S servo | The box latch |
 | 5V fan + 2N2222 | Air, switched by the microcontroller |
 | KY-012 buzzer | Check-in prompts and block boundaries |
+
+<p align="center"><img src="docs/images/wiring.png" width="620" alt="Wiring diagram"></p>
 
 ## Quick start
 
