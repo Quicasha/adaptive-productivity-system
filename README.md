@@ -97,7 +97,11 @@ Ships with **Focus**, **Break** and idle. New ones are made in the dashboard, no
 | 5V fan + 2N2222 | Air, switched by the microcontroller |
 | KY-012 buzzer | Check-in prompts and block boundaries |
 
-<p align="center"><img src="docs/images/schematic.png" width="600" alt="Circuit schematic"></p>
+<details>
+<summary><b>Circuit schematic</b></summary>
+<br>
+<p align="center"><img src="docs/images/schematic.png" width="560" alt="Circuit schematic"></p>
+</details>
 
 ## Quick start
 
